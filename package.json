@@ -1,0 +1,25 @@
+{
+  "name": "i2kn-libp2p",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:on-meetsys/i2kn-libp2p.git",
+  "author": "olivier nerot <olivier.nerot@meetsys.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "tsc . && node dist/index.js"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^6.1.0",
+    "@chainsafe/libp2p-noise": "^11.0.0",
+    "@libp2p/bootstrap": "^6.0.0",
+    "@libp2p/mdns": "^6.0.0",
+    "@libp2p/mplex": "^7.1.1",
+    "@libp2p/tcp": "^6.1.0",
+    "libp2p": "^0.42.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}
