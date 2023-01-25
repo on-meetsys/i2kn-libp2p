@@ -1,4 +1,6 @@
 import type { Libp2pOptions } from 'libp2p';
+import type { GossipsubEvents } from '@chainsafe/libp2p-gossipsub';
+import type { PubSub, SignedMessage } from '@libp2p/interface-pubsub';
 
 async function start(
   privKey: string,
@@ -18,6 +20,8 @@ async function start(
   const { preSharedKey } = await import('libp2p/pnet');
   const { gossipsub } = await import('@chainsafe/libp2p-gossipsub');
   const { logger } = await import('@libp2p/logger');
+  const { pipe } = await import('it-pipe');
+  const uint8ArrayToString = (await import('uint8arrays/to-string')).toString;
   const uint8ArrayFromString = (await import('uint8arrays/from-string')).fromString;
 
   const log = logger('i2kn:api:libp2p');
@@ -92,6 +96,28 @@ async function start(
   // }
 
   const libp2pnode = await createLibp2p(p2pOptions);
+
+  libp2pnode.pubsub.subscribe(mainpubsub);
+
+  (libp2pnode.pubsub as PubSub<GossipsubEvents>).addEventListener('gossipsub:message', async (evt) => {
+    const uint8ArrayToString = (await import('uint8arrays/to-string')).toString;
+    const msg = evt.detail.msg as SignedMessage;
+    log('pubsub msg', msg.topic, msg.from.toString(), uint8ArrayToString(msg.data));
+  });
+
+  await libp2pnode.handle('/i2kn', ({ stream }) => {
+    pipe(
+      stream,
+      async (source) => {
+        let message = '';
+        // eslint-disable-next-line no-restricted-syntax
+        for await (const msg of source) {
+          message += uint8ArrayToString(msg.subarray());
+        }
+        log('handle msg received', '/i2kn', message);
+      },
+    );
+  });
 
   libp2pnode.addEventListener('peer:discovery', (evt) => {
     const { detail: peer } = evt;
